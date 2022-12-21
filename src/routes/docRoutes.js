@@ -38,6 +38,7 @@ const swaggerOptions = {
         path.join(__dirname, '../doc/swagger/swagger-models.js'),
         path.join(__dirname, '../doc/swagger/doc-users.js'),
         path.join(__dirname, '../doc/swagger/doc-storage.js'),
+        path.join(__dirname, '../doc/swagger/doc-logs.js'),
     ]
 }
 
