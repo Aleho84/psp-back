@@ -18,6 +18,7 @@ passport.use('signin', new LocalStrategy(
         passReqToCallback: true,
     },
     async (req, email, password, done) => {
+        const ip = req.socket.remoteAddress
         let msg = null
 
         if (!req.body.name) {
@@ -29,14 +30,14 @@ passport.use('signin', new LocalStrategy(
         }
 
         if (msg) {
-            logger.warn(`[USERS]: ${msg}`)
+            logger.warn(`[USERS][${ip}]: ${msg}`)
             return done(null, false, { message: msg })
         }
 
         const user = await usersDao.findByEmail(email)
-        if (user) { 
-            msg = `Signin fail, ${email} already exists` 
-            logger.warn(`[USERS]: ${msg}`)
+        if (user) {
+            msg = `Signin fail, ${email} already exists`
+            logger.warn(`[USERS][${ip}]: ${msg}`)
             return done(null, false, { message: msg })
         }
 
@@ -45,7 +46,7 @@ passport.use('signin', new LocalStrategy(
         req.body.password = await encryptPassword(password)
 
         msg = `User ${email} signin susscefuly`
-        logger.info(`[USERS]: ${msg}`)
+        logger.info(`[USERS][${ip}]: ${msg}`)
 
         return done(null, nuevoUsuario)
     }
@@ -59,26 +60,28 @@ passport.use('login', new LocalStrategy(
     },
     async (req, email, password, done) => {
         try {
+            const ip = req.socket.remoteAddress
+            let msg = null
+
             const user = await usersDao.findByEmail(email)
             if (!user) {
-                const msg = `Login fail, user ${email} don't exist`
-                logger.warn(`[USERS]: ${msg}`)
+                msg = `Login fail, user ${email} don't exist`
+                logger.warn(`[USERS][${ip}]: ${msg}`)
                 return done(null, false, { message: msg })
             }
             const isTruePassword = await comparePassword(password, user.password)
             if (!isTruePassword) {
-                const msg = `Login fail, wrong password for user ${email}`
-                logger.warn(`[USERS]: ${msg}`)
+                msg = `Login fail, wrong password for user ${email}`
+                logger.warn(`[USERS][${ip}]: ${msg}`)
                 return done(null, false, { message: msg })
             }
-    
+
             user.token = tokenGenerate(user)
             
-            const ip = req.socket.remoteAddress
-            const msg = `User ${email} login susscefuly`
+            msg = `User ${email} login susscefuly`
             logger.info(`[USERS][${ip}]: ${msg}`)
-    
-            return done(null, user)            
+
+            return done(null, user)
         } catch (error) {
             return done(error)
         }

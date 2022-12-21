@@ -8,18 +8,28 @@ import {
 } from '../config/constant.js'
 
 export const imageUpload = async (req, res) => {
+    const ip = req.socket.remoteAddress
+    let msg = null
+
     try {
         await uploadImageFileMulter(req, res)
 
         if (req.file == undefined) {
-            return res.status(400).json({ message: 'Please upload a file!' })
+            msg = 'Please upload a image'
+            logger.warn(`[STORAGE][${ip}]: ${msg}`)
+            return res.status(400).json({ message: msg })
         }
 
-        res.status(200).send({ message: `Uploaded the file successfully: ${req.file.originalname}` })
+        msg = `Uploaded the image successfully: ${req.file.originalname}`
+        logger.info(`[STORAGE][${ip}]: ${msg}`)
+        res.status(200).send({ message: msg })
     } catch (err) {
         if (err.code == 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ message: 'File size cannot be larger than 2MB!' })
+            msg = 'Image size cannot be larger than 2Mb'
+            logger.warn(`[STORAGE][${ip}]: ${msg}`)
+            return res.status(400).json({ message: msg })
         } else {
+            logger.error(`[STORAGE][${ip}]: ${err}`)
             res.status(500).json({ message: err })
         }
     }
@@ -27,8 +37,13 @@ export const imageUpload = async (req, res) => {
 
 export const imageFiles = (req, res) => {
     fs.readdir(MULTER_PATH, function (err, files) {
+        const ip = req.socket.remoteAddress
+        let msg = null
+
         if (err) {
-            res.status(500).json({ message: 'Unable to list files!' })
+            msg = 'Error when trying to list images'
+            logger.error(`[STORAGE][${ip}]: ${msg}`)
+            res.status(500).json({ message: msg })
         }
 
         let fileInfos = []
@@ -40,21 +55,32 @@ export const imageFiles = (req, res) => {
             })
         })
 
+        msg = 'Image list fetched successfully'
+        logger.info(`[STORAGE][${ip}]: ${msg}`)
         res.status(200).json({ files: fileInfos })
     })
 }
 
 export const imageDownload = (req, res) => {
     const fileName = req.params.name
+    const ip = req.socket.remoteAddress
+    let msg = null
 
     res.download(`${MULTER_PATH}/${fileName}`, fileName, (err) => {
 
         if (err) {
             if (err.code == 'ENOENT') {
-                res.status(400).json({ message: 'File not found.' })
+                msg = `Image not found: ${fileName}`
+                logger.warn(`[STORAGE][${ip}]: ${msg}`)
+                res.status(400).json({ message: msg })
             } else {
-                res.status(500).json({ message: 'Could not download the file. ' + err })
+                msg = `Could not download the image. ${err}`
+                logger.error(`[STORAGE][${ip}]: ${msg}`)
+                res.status(500).json({ message: msg })
             }
+        } else {
+            msg = `Image download successfully: ${fileName}`
+            logger.info(`[STORAGE][${ip}]: ${msg}`)
         }
     })
 }
@@ -62,15 +88,24 @@ export const imageDownload = (req, res) => {
 export const imageRemove = (req, res) => {
     const fileName = req.params.name
     const filePath = `${MULTER_PATH}/${fileName}`
+    const ip = req.socket.remoteAddress
+    let msg = null
+
     fs.unlink(filePath, (err) => {
         if (err) {
             if (err.code == 'ENOENT') {
-                res.status(400).json({ message: 'The file does not exists' })
+                msg = 'The image does not exists'
+                logger.warn(`[STORAGE][${ip}]: ${msg}`)
+                res.status(400).json({ message: msg })
             } else {
-                res.status(500).json({ message: 'Could not delete the file' + err })
+                msg = `Could not delete the image. ${err}`
+                logger.error(`[STORAGE][${ip}]: ${msg}`)
+                res.status(500).json({ message: msg })
             }
         } else {
-            res.status(200).json({ message: 'File is deleted.' })
+            msg = 'Image successfully deleted'
+            logger.info(`[STORAGE][${ip}]: ${msg}`)
+            res.status(200).json({ message: msg })
         }
     })
 }
