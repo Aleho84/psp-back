@@ -53,10 +53,10 @@ export const signinError = (req, res) => {
 }
 
 export const logout = (req, res) => {
-  try {
-    const ip = req.socket.remoteAddress
-    let msg = null
+  const ip = req.socket.remoteAddress
+  let msg = null
 
+  try {
     if (!req.user) {
       msg = `Can not closed anonymous session`
       logger.info(`[USERS][${ip}]: ${msg}`)
@@ -81,10 +81,10 @@ export const logout = (req, res) => {
 }
 
 export const currentUser = (req, res) => {
-  try {
-    const ip = req.socket.remoteAddress
-    let msg = null
+  const ip = req.socket.remoteAddress
+  let msg = null
 
+  try {
     if (req.user) {
       const { name, lastname, image, email } = req.user
       msg = `Get current user ${email}`
@@ -102,10 +102,10 @@ export const currentUser = (req, res) => {
 }
 
 export const deleteUser = async (req, res) => {
-  try {
-    const ip = req.socket.remoteAddress
-    let msg = null
+  const ip = req.socket.remoteAddress
+  let msg = null
 
+  try {
     const userDeleted = await usersDao.delete(req.params.id)
     if (userDeleted) {
       msg = 'User deleted successfully'
@@ -124,10 +124,10 @@ export const deleteUser = async (req, res) => {
 }
 
 export const getUsers = async (req, res) => {
-  try {
-    const ip = req.socket.remoteAddress
-    let msg = null
+  const ip = req.socket.remoteAddress
+  let msg = null
 
+  try {
     const allUsers = await usersDao.getAll()
     if (allUsers) {
       msg = 'All users fetched successfully'
