@@ -5,7 +5,7 @@ import fs from 'fs'
 import { __dirname } from '../../config/constant.js'
 
 export const logCheck = function () {
-    const file = path.join(__dirname, '../../logs/error.log')
+    const file = path.join(__dirname, '../logs/error.log')
 
     const read = fs.readFileSync(file, { encoding: 'utf8', flag: 'r' })
 
