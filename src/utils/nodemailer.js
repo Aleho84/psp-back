@@ -24,6 +24,15 @@ export const generateCode = (digitCount) => {
     return code
 }
 
+export const dateCodeExpire = (hourDelay) => {
+    let dateNow = new Date()
+    if (!hourDelay) { hourDelay = 24 }
+    let hourDelayMiliseconds = 1000 * 60 * 60 * hourDelay
+
+    let dateNew = new Date(dateNow.getTime() + hourDelayMiliseconds)
+    return dateNew
+}
+
 export const sendMail = async (to, subject, text, html) => {
     try {
         let transporter = nodemailer.createTransport({

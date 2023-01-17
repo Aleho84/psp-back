@@ -1,14 +1,4 @@
 import mongoose from "mongoose"
-import { generateCode } from '../utils/nodemailer.js'
-
-const dateCodeExpire = () => {
-    let dateNow = new Date()
-    let hourDelay = 24
-    let hourDelayMiliseconds = 1000 * 60 * 60 * hourDelay
-
-    let dateNew = new Date(dateNow.getTime() + hourDelayMiliseconds)
-    return dateNew
-}
 
 export const usersSchema = new mongoose.Schema({
     name: {
@@ -34,11 +24,15 @@ export const usersSchema = new mongoose.Schema({
         },
         code: {
             type: Number,
-            default: generateCode(5)
+            default: 0
         },
         expireCode: {
             type: Date,
-            default: dateCodeExpire()
+            default: Date.now()
+        },
+        admin: {
+            type: Boolean,
+            default: false
         }
     }
 })

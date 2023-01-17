@@ -4,7 +4,7 @@ import { usersDao } from '../daos/index.js'
 import { encryptPassword, comparePassword } from '../utils/bcrypt.js'
 import logger from '../utils/logger.js'
 import { tokenGenerate } from './jsonwebtoken.js'
-import { sendCodeValidatorMail } from '../utils/nodemailer.js'
+import { sendCodeValidatorMail, generateCode, dateCodeExpire } from '../utils/nodemailer.js'
 
 const passCheck = (password) => {
     const min = 6
@@ -42,15 +42,22 @@ passport.use('signin', new LocalStrategy(
             return done(null, false, { message: msg })
         }
 
-        req.body.password = await encryptPassword(password)
-        const nuevoUsuario = await usersDao.create(req.body)
-        nuevoUsuario.token = tokenGenerate(nuevoUsuario)        
-        sendCodeValidatorMail(nuevoUsuario.email, nuevoUsuario.name, nuevoUsuario.account.code)
+        let newUsuer = req.body
+
+        newUsuer.password = await encryptPassword(password)
+        newUsuer.account = {}
+        newUsuer.account.confirmed = false
+        newUsuer.account.code = generateCode(5)
+        newUsuer.account.expireCode = dateCodeExpire(1)
+        newUsuer.token = tokenGenerate(newUsuer)
+        const signInUser = await usersDao.create(newUsuer)
+
+        sendCodeValidatorMail(signInUser.email, signInUser.name, signInUser.account.code)
 
         msg = `User ${email} signin susscefuly`
         logger.info(`[USERS][${ip}]: ${msg}`)
 
-        return done(null, nuevoUsuario)
+        return done(null, signInUser)
     }
 ))
 
