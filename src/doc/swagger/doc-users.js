@@ -148,3 +148,41 @@
  *         "500":
  *           description: Internal Server Error.
  */
+
+/**
+ * @swagger
+ * paths:
+ *   /api/users/verifyUser/{id}/{code}:
+ *     post:
+ *       summary: Verify user.
+ *       description: Verify the user with the code that was sent by mail.
+ *       operationId: "verifyUser"
+ *       tags:
+ *         - Users
+ *       produces:
+ *         - application/json
+ *       parameters:
+ *         - name: id
+ *           in: path
+ *           required: true
+ *           description: ID user
+ *           schema:
+ *             type: string
+ *             example: 63c6e38081a18345f9bc4e1e
+ *         - name: code
+ *           in: path
+ *           required: true
+ *           description: Verify code
+ *           schema:
+ *             type: string
+ *             example: 21435
+ *       responses:
+ *         "200":
+ *           description: OK. User was successfully verified.
+ *         "400":
+ *           description: Bad request. status code = [1=User not found; 2=The user has already been verified; 3=The code does not match; 4=The code expired]
+ *         "401":
+ *           description: Unauthorized.
+ *         "500":
+ *           description: Internal Server Error.
+ */

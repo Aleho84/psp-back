@@ -95,7 +95,7 @@ export const currentUser = (req, res) => {
       logger.info(`[USERS][${ip}]: ${msg}`)
       res.status(200).json({ name: 'Anonymous' })
     }
-  } catch (err) {    
+  } catch (err) {
     logger.error(`[USERS][${ip}]: ${err}`)
     res.status(500).json({ message: err.message })
   }
@@ -136,6 +136,48 @@ export const getUsers = async (req, res) => {
     } else {
       res.status(404).json({ message: `User not found. ID:${req.params.id}` })
     }
+  } catch (err) {
+    logger.error(`[USERS][${ip}]: ${err}`)
+    res.status(500).json({ message: err.message })
+  }
+}
+
+export const verifyUser = async (req, res) => {
+  const ip = req.socket.remoteAddress
+
+  try {
+    const findUser = await usersDao.get(req.params.id)
+
+    if (!findUser) {
+      res.status(400).json({ status: 1, message: `User not found. ID:${req.params.id}` })
+      return
+    }
+
+    if (findUser.account.confirmed) {
+      res.status(400).json({ status: 2, message: `The user has already been verified` })
+      return
+    }
+
+    if (findUser.account.code != req.params.code) {
+      res.status(400).json({ status: 3, message: `The code does not match. CODE:${req.params.code}` })
+      return
+    }
+
+    const fechaExpire = Date.parse(findUser.account.expireCode)
+    const fechaNow = Date.now()
+
+    if (fechaNow > fechaExpire) {
+      res.status(400).json({ status: 4, message: `The code expired.` })
+      return
+    }
+
+    findUser.account.confirmed = true
+    await usersDao.update(req.params.id, findUser)
+
+    const msg = 'User was successfully verified'
+    logger.info(`[USERS][${ip}]: ${msg}`)
+    res.status(200).json({ status: 200, message: msg })
+
   } catch (err) {
     logger.error(`[USERS][${ip}]: ${err}`)
     res.status(500).json({ message: err.message })
